@@ -1,81 +1,311 @@
 import React, { Component } from 'react';
-import {Platform, StyleSheet, Text, SafeAreaView } from 'react-native';
-import RNLaunchNavigator from 'react-native-launch-navigator';
-//import ErrorHelper from 'helper/ErrorHelper';
+import {Platform, StyleSheet, Switch} from "react-native";
+import { Container, Header, Title, Content, Body, Form, Item, Input, Button, Text, Picker } from 'native-base';
+import LaunchNavigator from 'react-native-launch-navigator';
 
-// Make SafeAreaView work on iOS 10 and below
-const OS_STATUSBAR_OFFSET = (Platform.OS === "ios" && parseInt(Platform.Version) < 11) ? 20 : 0;
-
-const A_STRING = "foo";
-const AN_ERROR = "error";
-
-const PROMISE_SUCCESS = "promise - success";
-const PROMISE_ERROR = "promise - error";
-
-let initialState = {};
-initialState[PROMISE_SUCCESS] = {};
-initialState[PROMISE_ERROR] = {};
-
+import LNAppPicker from './components/LNAppPicker';
+import LNPicker from './components/LNPicker';
 
 const styles = StyleSheet.create({
-    paddingTop: OS_STATUSBAR_OFFSET,
-    success:{
-        color: 'blue'
-    },
-    error:{
-        color: 'red'
+    button:{
+        alignSelf: 'center',
+        marginTop: 20
     }
 });
 
-class Result extends Component {
-    render() {
-        let outcome = this.props.success ? "success" : "error";
-        return (
-            <Text style={styles[outcome]}>{this.props.name}: {this.props.value}</Text>
-        );
-    }
+let instance, defaultSelectedApp,
+    defaultLaunchMode, launchModes;
+
+if(Platform.OS === "ios"){
+    defaultSelectedApp = LaunchNavigator.APP.APPLE_MAPS;
+    launchModes = {
+        [LaunchNavigator.LAUNCH_MODE.URI_SCHEME]: "URI scheme",
+        [LaunchNavigator.LAUNCH_MODE.MAPKIT]: "MapKit class"
+    };
+    defaultLaunchMode = LaunchNavigator.LAUNCH_MODE.URI_SCHEME;
+}else{
+    defaultSelectedApp = LaunchNavigator.APP.GOOGLE_MAPS;
+    launchModes = {
+        [LaunchNavigator.LAUNCH_MODE.MAPS]: "Maps",
+        [LaunchNavigator.LAUNCH_MODE.TURN_BY_TURN]: "Turn-by-turn",
+        [LaunchNavigator.LAUNCH_MODE.GEO]: "geo: protocol",
+    };
+    defaultLaunchMode = LaunchNavigator.LAUNCH_MODE.MAPS;
 }
 
-export default class LotsOfResults extends Component {
-    state = initialState;
+let launchModePickerItems = [];
+for(let mode in launchModes){
+    launchModePickerItems.push(<Picker.Item value={mode} label={launchModes[mode]} key={mode} />);
+}
 
+export default class App extends Component {
+    state = {};
 
-    setStateAsync(name, value) {
+    constructor(props) {
+        super(props);
+        instance = this;
+
+        this.state = {
+            app: defaultSelectedApp,
+            start: '',
+            destination: '',
+            destinationName: '',
+            startName: '',
+            launchMode: defaultLaunchMode,
+            transportMode: '',
+            extras: '',
+            enableGeocoding: true
+        };
+    }
+
+    componentDidMount() {
+        LaunchNavigator.enableDebug(true);
+    }
+
+    setStateAsync(state) {
         return new Promise((resolve) => {
-            let state = this.state;
-            state[name] = value;
-            this.setState(state, resolve)
+            instance.setState(state, resolve)
         });
     }
 
-    setAndGetStringWithPromise(name, message){
-        RNLaunchNavigator.setAndGetStringWithPromise(message)
-            .then((stringWithPromise) => {
-                this.setStateAsync(name, {
-                    success: true,
-                    value: stringWithPromise
-                });
-            })
-            .catch((error) => {
-                // debugger;
-                this.setStateAsync(name, {
-                    success: false,
-                    value: error.message
-                });
-            });
+    async handleFieldChange(name, value){
+        await instance.setStateAsync({[name]: value});
     }
 
-    async componentDidMount() {
-        this.setAndGetStringWithPromise(PROMISE_SUCCESS, A_STRING);
-        this.setAndGetStringWithPromise(PROMISE_ERROR, AN_ERROR);
+    handleInputChange(e){
+        instance.handleFieldChange(this.name, e.nativeEvent.text);
+    }
+
+
+    getStateTrimmed(name){
+        return instance.state[name].trim();
+    }
+
+    supportsTransportMode(){
+        return LaunchNavigator.supportsTransportMode(instance.state.app, Platform.OS, instance.state.launchMode);
+    }
+
+    supportsStart(){
+        return LaunchNavigator.supportsStart(instance.state.app, Platform.OS, instance.state.launchMode);
+    }
+
+    supportsStartName(){
+        return LaunchNavigator.supportsStartName(instance.state.app, Platform.OS, instance.state.launchMode);
+    }
+
+    supportsDestName(){
+        return LaunchNavigator.supportsDestName(instance.state.app, Platform.OS, instance.state.launchMode);
+    }
+
+    supportsLaunchMode(){
+        return LaunchNavigator.supportsLaunchMode(instance.state.app, Platform.OS);
+    }
+
+    /**
+     * Render
+     */
+
+    renderStartItem(){
+        let startItem = null;
+        if(this.supportsStart()){
+            startItem =
+                <Item>
+                    <Input
+                        name="start"
+                        onChange={this.handleInputChange}
+                        placeholder='Start location (default is current location)'
+                        placeholderTextColor='#cccccc'
+                    />
+                </Item>;
+        }
+        return startItem;
+    }
+
+    renderStartNameItem(){
+        let startNameItem = null;
+        if(this.supportsStartName()){
+            startNameItem =
+                <Item>
+                    <Input
+                        name="startName"
+                        onChange={this.handleInputChange}
+                        placeholder='Start nickname'
+                        placeholderTextColor='#cccccc'
+                    />
+                </Item>;
+        }
+        return startNameItem;
+    }
+
+    renderDestNameItem(){
+        let destNameItem = null;
+        if(this.supportsDestName()){
+            destNameItem =
+                <Item>
+                    <Input
+                        name="destinationName"
+                        onChange={this.handleInputChange}
+                        placeholder='Destination nickname'
+                        placeholderTextColor='#cccccc'
+                    />
+                </Item>;
+        }
+        return destNameItem;
+    }
+
+    renderLaunchModeItem(){
+        let launchModeItem = null;
+        if(this.supportsLaunchMode()){
+            launchModeItem =
+                <Item style={{paddingLeft: 10}} picker>
+                    <Text>Launch mode:</Text>
+                    <LNPicker
+                        name="launchMode"
+                        placeholder="Select launch mode"
+                        defaultSelected={defaultLaunchMode}
+                        onUpdate={this.handleFieldChange}
+                        items={launchModePickerItems}
+                    />
+                </Item>;
+        }
+        return launchModeItem;
+    }
+
+
+    renderTransportModeItem(){
+        let transportModeItem = null;
+        if(this.supportsTransportMode()){
+            let transportModes = LaunchNavigator.getTransportModes(instance.state.app, Platform.OS, instance.state.launchMode);
+            let transportModePickerItems = [];
+            transportModes.forEach((transportMode) => {
+                transportModePickerItems.push(<Picker.Item value={transportMode} label={transportMode} key={transportMode} />);
+            });
+            let selectedMode = transportModes[0];
+
+
+            transportModeItem =
+            <Item style={{paddingLeft: 10}} picker>
+                <Text>Transport mode:</Text>
+                <LNPicker
+                    name="transportMode"
+                    placeholder="Select transport mode"
+                    onUpdate={this.handleFieldChange}
+                    items={transportModePickerItems}
+                    defaultSelected={selectedMode}
+                />
+            </Item>;
+        }
+        return transportModeItem;
     }
 
     render() {
         return (
-            <SafeAreaView style={{alignItems: 'center'}}>
-                <Result name={PROMISE_SUCCESS} success={this.state[PROMISE_SUCCESS].success} value={this.state[PROMISE_SUCCESS].value} />
-                <Result name={PROMISE_ERROR} success={this.state[PROMISE_ERROR].success} value={this.state[PROMISE_ERROR].value} />
-            </SafeAreaView>
+            <Container>
+                <Header>
+                    <Body>
+                    <Title>LaunchNavigator Example</Title>
+                    </Body>
+                </Header>
+                <Content>
+                    <Form>
+                        <Item>
+                            <Input
+                                name="destination"
+                                onChange={this.handleInputChange}
+                                placeholder='Destination location'
+                                placeholderTextColor='#cccccc'
+                            />
+                        </Item>
+                        <Item style={{paddingLeft: 10}} picker>
+                            <Text>App:</Text>
+                            <LNAppPicker
+                                name="app"
+                                defaultSelected={defaultSelectedApp}
+                                onUpdate={this.handleFieldChange}
+                            />
+                        </Item>
+                        <Button
+                            onPress={this.navigate}
+                            disabled={!this.getStateTrimmed("destination") || this.getStateTrimmed("destination") === this.getStateTrimmed("start")}
+                            style={styles.button}>
+                            <Text>Navigate</Text>
+                        </Button>
+                        <Item>
+                            <Text style={{marginTop: 10, marginBottom: 10, fontSize: 20}}>More options</Text>
+                        </Item>
+                        {this.renderDestNameItem()}
+                        {this.renderStartItem()}
+                        {this.renderStartNameItem()}
+                        {this.renderTransportModeItem()}
+                        {this.renderLaunchModeItem()}
+                        <Item>
+                            <Input
+                                name="extras"
+                                onChange={this.handleInputChange}
+                                placeholder='App-specific params as: a=b&c=d'
+                                placeholderTextColor='#cccccc'
+                            />
+                        </Item>
+                        <Item>
+                            <Text style={{marginTop:10, marginBottom:10, marginRight: 20}}>Enable geocoding</Text>
+                            <Switch
+                                name="enableGeocoding"
+                                onValueChange={this.handleFieldChange.bind(this, "enableGeocoding")}
+                                value={this.state.enableGeocoding}
+                            />
+                        </Item>
+                    </Form>
+                </Content>
+            </Container>
         );
+    }
+
+    navigate() {
+        let params = {
+            app: instance.state.app,
+            enableGeocoding: instance.state.enableGeocoding
+        };
+        if(instance.supportsStart()){
+            params.start = instance.getStateTrimmed("start");
+        }
+        if(instance.supportsStartName()){
+            params.startName = instance.getStateTrimmed("startName");
+        }
+        if(instance.supportsDestName()){
+            params.destinationName = instance.getStateTrimmed("destinationName");
+        }
+        if(instance.supportsTransportMode()){
+            params.transportMode = instance.getStateTrimmed("transportMode");
+        }
+        if(instance.supportsLaunchMode()){
+            params.launchMode = instance.getStateTrimmed("launchMode");
+        }
+        if(instance.state.extras){
+            let sExtras = instance.state.extras;
+            let oExtras = {};
+            try{
+                sExtras = sExtras.replace(';','&');
+                let extras = sExtras.split('&');
+                let hasExtras = false;
+                for(let i=0; i<extras.length; i++){
+                    let parts = extras[i].split('=');
+                    if(parts[0] && parts[1]){
+                        oExtras[parts[0]] = parts[1];
+                        hasExtras = true;
+                    }
+                }
+                if(hasExtras){
+                    params.extras = oExtras;
+                }
+            }catch(e){
+                console.error("Failed to parse 'App-specific params' as URI querystring - please check the syntax");
+            }
+        }
+
+        console.log("navigate()");
+        //console.dir(params);
+        LaunchNavigator.navigate(instance.getStateTrimmed("destination"), params)
+            .then(() => console.log("Launched "+instance.state.app))
+            .catch((err) => console.error("Error launching "+instance.state.app+": "+err));
     }
 }
