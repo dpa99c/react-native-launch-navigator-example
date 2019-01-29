@@ -6,6 +6,8 @@ import LaunchNavigator from 'react-native-launch-navigator';
 import LNAppPicker from './components/LNAppPicker';
 import LNPicker from './components/LNPicker';
 
+const googleApiKey = "your_api_key";
+
 const styles = StyleSheet.create({
     button:{
         alignSelf: 'center',
@@ -24,6 +26,7 @@ if(Platform.OS === "ios"){
     };
     defaultLaunchMode = LaunchNavigator.LAUNCH_MODE.URI_SCHEME;
 }else{
+    LaunchNavigator.setGoogleApiKey(googleApiKey);
     defaultSelectedApp = LaunchNavigator.APP.GOOGLE_MAPS;
     launchModes = {
         [LaunchNavigator.LAUNCH_MODE.MAPS]: "Maps",
