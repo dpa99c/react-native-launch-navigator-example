@@ -55,7 +55,7 @@ export default class LNAppPicker extends Component {
             <Picker
                 placeholder="Select navigator app"
                 mode="dropdown"
-                iosIcon={<Icon name="ios-arrow-down-outline" />}
+                iosIcon={<Icon name="arrow-down" />}
                 style={{ width: undefined }}
                 placeholderStyle={{ color: "#cccccc" }}
                 placeholderIconColor="#007aff"

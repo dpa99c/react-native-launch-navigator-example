@@ -26,7 +26,7 @@ export default class LNPicker extends Component {
         return (
             <Picker
                 mode="dropdown"
-                iosIcon={<Icon name="ios-arrow-down-outline" />}
+                iosIcon={<Icon name="arrow-down" />}
                 style={{ width: undefined }}
                 placeholderStyle={{ color: "#cccccc" }}
                 placeholderIconColor="#007aff"

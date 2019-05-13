@@ -1,4 +1,4 @@
-package com.test;
+package com.rnlnexample;
 
 import com.facebook.react.ReactActivity;
 
