@@ -22,6 +22,15 @@ Run on the target platform:
     $ react-native run-ios
     $ react-native run-android
 
+# Troubleshooting
+
+## iOS: `Multiple commands produce...`
+
+If you encounter `Multiple commands produce...` build errors on iOS:
+- open the project workspace in Xcode
+- Open "Build Phases" for you app project target
+- Expand "Copy Pods Resources"
+- Check "Run script only when installing"
 
 License
 ================
