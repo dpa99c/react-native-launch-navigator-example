@@ -11,7 +11,7 @@
     "native-base": "^2.12.1",
     "react": "16.8.6",
     "react-native": "0.60.4",
-    "react-native-launch-navigator": "git+https://github.com/dpa99c/react-native-launch-navigator.git#dev",
+    "react-native-launch-navigator": "git+https://github.com/dpa99c/react-native-launch-navigator.git",
     "react-native-vector-icons": "^6.6.0"
   },
   "devDependencies": {
