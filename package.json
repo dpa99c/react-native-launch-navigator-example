@@ -1,28 +1,29 @@
 {
   "name": "RNLNExample",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint ."
   },
   "dependencies": {
-    "native-base": "^2.12.1",
-    "react": "16.8.6",
-    "react-native": "0.60.4",
-    "react-native-launch-navigator": "git+https://github.com/dpa99c/react-native-launch-navigator.git",
-    "react-native-vector-icons": "^6.6.0"
+    "native-base": "^2.13.14",
+    "react": "16.13.1",
+    "react-native": "0.63.2",
+    "react-native-launch-navigator": "git+https://github.com/dpa99c/react-native-launch-navigator.git"
   },
   "devDependencies": {
-    "@babel/core": "7.5.5",
-    "@babel/runtime": "7.5.5",
-    "@react-native-community/eslint-config": "0.0.3",
-    "babel-jest": "24.8.0",
-    "eslint": "6.1.0",
-    "jest": "24.8.0",
-    "metro-react-native-babel-preset": "0.54.1",
-    "react-test-renderer": "16.8.6"
+    "@babel/core": "^7.10.5",
+    "@babel/runtime": "^7.10.5",
+    "@react-native-community/eslint-config": "^2.0.0",
+    "babel-jest": "^26.1.0",
+    "eslint": "^7.5.0",
+    "jest": "^26.1.0",
+    "metro-react-native-babel-preset": "^0.61.0",
+    "react-test-renderer": "16.13.1"
   },
   "jest": {
     "preset": "react-native"
